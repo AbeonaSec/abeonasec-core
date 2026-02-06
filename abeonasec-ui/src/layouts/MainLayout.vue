@@ -1,6 +1,7 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <q-header elevated>
+    <q-header elevated   :class="$q.dark.isActive ? 'bg-grey-10 text-white' : 'bg-grey text-white'"
+>
       <q-toolbar>
         <q-btn
           flat
@@ -12,10 +13,20 @@
         />
 
         <q-toolbar-title>
-          Quasar App
+          Abeona Security
         </q-toolbar-title>
+        
+        <!-- Dark/Light mode toggle -->
+        <q-btn
+          flat
+          round
+          dense
+          :icon="$q.dark.isActive ? 'dark_mode' : 'light_mode'"
+          @click="$q.dark.toggle()"
+          aria-label="Toggle dark mode"
+        />
 
-        <div>Quasar v{{ $q.version }}</div>
+        <div>v1.0.0</div>
       </q-toolbar>
     </q-header>
 
@@ -51,46 +62,34 @@ import EssentialLink from 'components/EssentialLink.vue'
 
 const linksList = [
   {
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev'
-  },
-  {
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework'
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev'
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev'
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev'
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev'
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
+    title: 'Health',
+    caption: 'System status and resource utilization',
     icon: 'favorite',
-    link: 'https://awesome.quasar.dev'
+    link: '/'
+  },
+  {
+    title: 'Threat Management',
+    caption: 'Active threats and mitigation actions',
+    icon: 'code',
+    link: '/threats'
+  },
+  {
+    title: 'Logs',
+    caption: 'Security events and audit trails',
+    icon: 'chat',
+    link: '/logs'
+  },
+  {
+    title: 'Network',
+    caption: 'Traffic monitoring and connection status',
+    icon: 'record_voice_over',
+    link: '/network'
+  },
+  {
+    title: 'Help',
+    caption: 'Documentation and support resources',
+    icon: 'rss_feed',
+    link: '/help'
   }
 ]
 
