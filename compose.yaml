@@ -1,24 +1,18 @@
 services:
-  # default nginx server for networking debugging
-  nginx-test:
-    container_name: nginx-test
-    image: nginx:alpine
-    ports:
-      - "8080:80"
-
   abeonasec-ui:
     container_name: abeonasec-ui
     build: # Build container using aboenasec-ui.Dockerfile
       context: .
       dockerfile: abeonasec-ui.Dockerfile
     ports:
-    - "9080:80" # serve on http://{Host IP}:9080 for testing (80 for prod)
+    - "8081:80" # serve on http://{Host IP}:8081 for testing (80 for prod)
     networks:
     - external # using external name for containers bound to Host
     - internal # using internal name for Pod
 
-  # example from https://ikarthiks.medium.com/setting-up-elasticsearch-and-kibana-single-node-with-docker-compose-329776fa3aee
+  # modified example from https://ikarthiks.medium.com/setting-up-elasticsearch-and-kibana-single-node-with-docker-compose-329776fa3aee
   # note that we are setting up certificates regardless of the fact that this service is internal to the Pod network
+  # elasticsearch is much happier when run with certs
   elastic-init:
     container_name: elastic-init
     image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
@@ -42,7 +36,6 @@ services:
           "instances:\n"\
           "  - name: abeonasec-es01\n"\
           "    dns:\n"\
-          "      - abeonasec-es01\n"\
           "      - localhost\n"\
           "    ip:\n"\
           "      - 127.0.0.1\n"\
@@ -55,11 +48,12 @@ services:
         find . -type d -exec chmod 750 \{\} \;;
         find . -type f -exec chmod 640 \{\} \;;
         echo "Waiting for Elasticsearch availability";
-        until curl -s --cacert config/certs/ca/ca.crt https://abeonasec-es01:9200 | grep -q "missing authentication credentials"; do sleep 30; done;
-        echo "Setting kibana_system password";
-        until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://abeonasec-es01:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
-        echo "All done!";
+        until curl -Iv https://host.containers.internal:9200 2>&1 | grep "SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS"; do sleep 10; done;
+        echo "All done, exiting...";
+        kill -s SIGTERM 1;
       '
+    networks:
+    - internal
     healthcheck:
       test: ["CMD-SHELL", "[ -f config/certs/abeonasec-es01/abeonasec-es01.crt ]"]
       interval: 1s
@@ -92,6 +86,10 @@ services:
     - xpack.security.transport.ssl.certificate=certs/abeonasec-es01/abeonasec-es01.crt
     - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
     - xpack.security.transport.ssl.verification_mode=certificate
+    # the following are environment variables needed to enable elasticvue 
+    # to access the cluster and can be removed later
+    - http.cors.enabled=true
+    - http.cors.allow-origin=/.*/
     ulimits:
       memlock:
         soft: -1
@@ -111,7 +109,7 @@ services:
     container_name: DEV-abeonasec-elasticvue
     image: docker.io/cars10/elasticvue:latest
     ports:
-      - "8081:80" # exposed to host for viewing
+      - "8080:8080" # exposed to host for viewing
     environment:
     - ELASTICVUE_CLUSTERS='[{"name":"abeonasec-es-cluster", "uri":"https://localhost:9200", "username":"elastic", "password":"$ELASTIC_PASSWORD"}]'
     networks:
