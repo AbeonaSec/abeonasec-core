@@ -9,7 +9,7 @@ services:
     networks:
     - external # using external name for containers bound to Host
     - internal # using internal name for Pod
-  restart: unless-stopped
+    restart: unless-stopped
 
   # modified example from https://ikarthiks.medium.com/setting-up-elasticsearch-and-kibana-single-node-with-docker-compose-329776fa3aee
   # note that we are setting up certificates regardless of the fact that this service is internal to the Pod network
