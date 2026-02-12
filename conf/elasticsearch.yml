@@ -1,0 +1,2 @@
+# in container this file mounts to /usr/share/elasticsearch/config/elasticsearch.yml
+node.name: ${HOSTNAME}
