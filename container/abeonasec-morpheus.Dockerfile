@@ -13,8 +13,8 @@ RUN apt-get update &&\
 WORKDIR /
 # install miniconda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O /miniconda.sh &&\
-	bash miniconda.sh -b -u -p /opt/conda &&\
-	rm /miniconda.sh
+        bash miniconda.sh -b -u -p /opt/conda &&\
+        rm /miniconda.sh
 
 # add conda to PATH
 ENV PATH=/opt/conda/bin:$PATH
@@ -35,4 +35,6 @@ RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate morpheus && \
     pip install -r $(dirname $(python -c "import morpheus; print(morpheus.__file__)"))/requirements_morpheus_core_arch-$(arch).txt
 
-CMD ["bash", "-c", "nvidia-smi"]
+# entrypoint command needs to keep container alive indefinitely
+# can still exec commands into the container otherwise
+CMD ["sleep", "infinity"]
