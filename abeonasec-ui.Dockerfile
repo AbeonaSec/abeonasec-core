@@ -10,7 +10,7 @@ RUN npm run build
 
 # stage 2: start nginx and serve built project
 # copy the built Quasar project to the default site location
-FROM nginx:alpine
+FROM docker.io/library/nginx:alpine
 COPY --from=builder /app/dist/spa /usr/share/nginx/html/abeonasec-spa
 
 # copy default configuration file
