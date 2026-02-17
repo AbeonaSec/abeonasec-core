@@ -1,2 +1,26 @@
 # in container this file mounts to /usr/share/elasticsearch/config/elasticsearch.yml
-node.name: ${HOSTNAME}
+# networking and cluster settings
+cluster.name: abeonasec-es-cluster
+node.name: abeonasec-es01
+discover.type: single-node
+network.host: localhost
+http.port: 9200
+discovery.seed_hosts:
+  - localhost
+  - host.containers.internal
+
+# security settings
+xpack.security.enabled: true
+xpack.security.http.ssl.enabled: true
+xpack.security.http.ssl.key: /usr/share/elasticsearch/config/certs/abeonasec-es01/abeonasec-es01.key
+xpack.security.http.ssl.certificate: /usr/share/elasticsearch/config/certs/abeonasec-es01/abeonasec-es01.crt
+xpack.security.http.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca/ca.crt
+xpack.security.transport.ssl.enabled: true
+xpack.security.transport.ssl.key: /usr/share/elasticsearch/config/certs/abeonasec-es01/abeonasec-es01.key
+xpack.security.transport.ssl.certificate: /usr/share/elasticsearch/config/certs/abeonasec-es01/abeonasec-es01.crt
+xpack.security.transport.ssl.certificate_authorities: /usr/share/elasticsearch/config/certs/ca/ca.crt
+xpack.security.transport.ssl.verification_mode: certificate
+
+# internal http communication settings
+http.cors.enabled: true
+http.cors.allow-origin: /.*/
