@@ -58,3 +58,5 @@ sudo mkdir /opt/abeonasec/scripts
 sudo mkdir /opt/abeonasec/models
 sudo mkdir /var/lib/abeonasec/data
 sudo mkdir /var/log/abeonasec/
+
+echo "Please reboot your system"
