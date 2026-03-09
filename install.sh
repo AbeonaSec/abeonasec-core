@@ -12,6 +12,7 @@ declare -a EXP=(
 "curl"
 "gnupg2"
 "podman"
+"podman-compose"
 )
 declare -a DEP=(
 
@@ -56,6 +57,7 @@ sudo mkdir /etc/abeonasec/
 sudo mkdir /opt/abeonasec/
 sudo mkdir /opt/abeonasec/scripts
 sudo mkdir /opt/abeonasec/models
+sudo mkdir /var/lib/abeonasec
 sudo mkdir /var/lib/abeonasec/data
 sudo mkdir /var/log/abeonasec/
 
