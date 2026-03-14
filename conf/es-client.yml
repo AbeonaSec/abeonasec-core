@@ -1,0 +1,10 @@
+# for podman, needs to be host.containers.internal
+hosts: ["https://host.containers.internal:9200"]
+# make sure certs are owned by a user
+# otherwise will not be accessible inside container
+# mounting certs dir to /certs inside container
+ca_certs: "/certs/ca/ca.crt"
+#verify_certs: False
+# basic auth for elasticsearch cluster
+# tuple with ("uname", "passwd")
+basic_auth: ["elastic", "placeholder123"]
