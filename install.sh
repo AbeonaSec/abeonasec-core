@@ -66,12 +66,18 @@ libnvidia-container1=$NVIDIA_CONTAINER_TOOLKIT_VERSION
 sudo useradd -r -s /bin/bash abeonasec
 
 sudo mkdir /etc/abeonasec/
+sudo chown abeonasec:abeonasec /etc/abeonasec
 sudo mkdir /opt/abeonasec/
 sudo mkdir /opt/abeonasec/scripts
 sudo mkdir /opt/abeonasec/models
+sudo chown abeonasec:abeonasec /opt/abeonasec
 sudo mkdir /var/lib/abeonasec
 sudo mkdir /var/lib/abeonasec/data
+sudo chown abeonasec:abeonasec /var/lib/abeonasec
 sudo mkdir /var/log/abeonasec/
+sudo chown abeonasec:abeonasec /var/log/abeonasec
+
+
 
 echo ""
 echo "Please reboot your system"
