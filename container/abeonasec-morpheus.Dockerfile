@@ -6,7 +6,7 @@
 FROM docker.io/nvidia/cuda:12.8.0-runtime-ubuntu24.04
 
 RUN apt-get update &&\
-    apt-get install -y wget &&\
+    apt-get install -y wget curl &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/*
 
