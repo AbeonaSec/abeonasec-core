@@ -38,6 +38,9 @@ RUN . /opt/conda/etc/profile.d/conda.sh && \
     conda activate morpheus && \
     pip install -r $(dirname $(python -c "import morpheus; print(morpheus.__file__)"))/requirements_morpheus_core_arch-$(arch).txt
 
+# for python output to container logs
+ENV PYTHONUNBUFFERED=1
+
 # entrypoint command activates morpheus conda environment
 # then we exec commands into the container as needed
 ENTRYPOINT ["/entry.sh"]
