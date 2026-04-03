@@ -11,7 +11,7 @@ RUN apt-get update &&\
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /
-COPY entry.sh /entry.sh
+COPY container/entry.sh /entry.sh
 RUN chmod +x /entry.sh
 
 # install miniconda
