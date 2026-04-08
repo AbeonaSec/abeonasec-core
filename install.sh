@@ -77,10 +77,13 @@ sudo chmod -R g+rwxs /etc/abeonasec
 sudo mkdir /opt/abeonasec/
 sudo mkdir /opt/abeonasec/scripts
 sudo mkdir /opt/abeonasec/models
+sudo mkdir /opt/abeonasec/certs
 sudo chown -R abeonasec:abeonasec /opt/abeonasec
 sudo chmod -R g+rwxs /opt/abeonasec
 sudo mkdir /var/lib/abeonasec
 sudo mkdir /var/lib/abeonasec/data
+sudo mkdir /var/lib/abeonasec/kafka
+sudo mkdir /var/lib/abeonasec/elasticsearch/data
 sudo chown -R abeonasec:abeonasec /var/lib/abeonasec
 sudo chmod -R g+rwxs /var/lib/abeonasec
 sudo mkdir /var/log/abeonasec/
@@ -89,9 +92,11 @@ sudo chmod -R g+rwxs /var/log/abeonasec
 
 read -s -p "Please enter a password for the configuration: " password
 
-cp -r ./compose /etc/abeonasec/
+sudo cp -r ./compose /etc/abeonasec/
 
 echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env
+
+podman compose -f /etc/abeonasec/compose/compose.yml pull
 
 echo ""
 echo "Please reboot your system"
