@@ -1,5 +1,5 @@
 # for podman, needs to be host.containers.internal
-hosts: ["https://host.containers.internal:9200"]
+hosts: ["https://abeonasec-es01:9200"]
 # make sure certs are owned by a user
 # otherwise will not be accessible inside container
 # mounting certs dir to /certs inside container
