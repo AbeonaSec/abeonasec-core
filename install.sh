@@ -93,6 +93,8 @@ sudo chmod -R g+rwxs /var/log/abeonasec
 read -s -p "Please enter a password for the configuration: " password
 
 sudo cp -r ./compose /etc/abeonasec/
+sudo cp ./conf/es-client.yml /etc/abeonasec/
+sed "s/placeholder123/$password/g" /etc/abeonasec/es-client.yml
 
 echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env
 
