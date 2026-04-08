@@ -1,0 +1,197 @@
+services:
+  kafka: # single node kafka cluster
+    image: docker.io/apache/kafka:latest
+    hostname: kafka
+    container_name: kafka
+    group_add:
+      - keep-groups
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_CONTAINER:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_CONTAINER://kafka:9092,PLAINTEXT_HOST://localhost:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:29093
+      KAFKA_LISTENERS: PLAINTEXT://kafka:29092,CONTROLLER://kafka:29093,PLAINTEXT_CONTAINER://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:9093
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - /var/lib/abeonasec/kafka:/tmp/kraft-combined-logs
+    networks:
+      - abeonasec-internal
+
+  elastic-init:
+    container_name: elastic-init
+    image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
+    group_add:
+      - keep-groups
+    volumes:
+      - /opt/abeonasec/certs:/usr/share/elasticsearch/config/certs
+    user: root # required for generating and setting ownership of certs with following shell script
+    command: >
+      bash -c '
+        if [ x${ELASTIC_PASSWORD} == x ]; then
+          echo "Set the ELASTIC_PASSWORD environment variable in the .env file";
+          exit 1;
+        fi;
+        if [ ! -f config/certs/ca.zip ]; then
+          echo "Creating CA";
+          bin/elasticsearch-certutil ca --silent --pem -out config/certs/ca.zip;
+          unzip config/certs/ca.zip -d config/certs;
+        fi;
+        if [ ! -f config/certs/certs.zip ]; then
+          echo "Creating certs";
+          echo -ne \
+          "instances:\n"\
+          "  - name: abeonasec-es01\n"\
+          "    dns:\n"\
+          "      - abeonasec-es01\n"\
+          > config/certs/instances.yml;
+          bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
+          unzip config/certs/certs.zip -d config/certs;
+        fi;
+        echo "Setting file permissions"
+        chown -R root:root config/certs;
+        find . -type d -exec chmod 750 \{\} \;;
+        find . -type f -exec chmod 640 \{\} \;;
+        echo "Waiting for Elasticsearch availability";
+        until curl -Iv https://abeonasec-es01:9200 2>&1 | grep "SSL connection using TLSv1.3 / TLS_AES_256_GCM_SHA384 / x25519 / RSASSA-PSS"; do sleep 10; done;
+        echo "All done, exiting...";
+        kill -s SIGTERM 1;
+      '
+    networks:
+    - abeonasec-internal
+    healthcheck:
+      test: ["CMD-SHELL", "[ -f config/certs/abeonasec-es01/abeonasec-es01.crt ]"]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
+  abeonasec-es01: # single node elasticsearch cluster
+    container_name: abeonasec-es01
+    image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
+    group_add:
+      - keep-groups
+    volumes:
+      - /var/lib/abeonasec/elasticsearch/data:/usr/share/elasticsearch/data
+      - /opt/abeonasec/certs:/usr/share/elasticsearch/config/certs
+    networks:
+      - abeonasec-internal
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM ubuntu:latest
+        RUN apt-get update && apt-get install -y curl
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - bootstrap.memory_lock=true
+      - node.name=abeonasec-es01
+      - discovery.type=single-node
+      - cluster.name=abeonasec-es-cluster
+      - bootstrap.memory_lock=true
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/abeonasec-es01/abeonasec-es01.key
+      - xpack.security.http.ssl.certificate=certs/abeonasec-es01/abeonasec-es01.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/abeonasec-es01/abeonasec-es01.key
+      - xpack.security.transport.ssl.certificate=certs/abeonasec-es01/abeonasec-es01.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=certificate
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    healthcheck:
+      test: curl -s -f --cacert config/certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} https://abeonasec-es01:9200/_cat/health | grep green || exit 1
+      interval: 10s
+      timeout: 10s
+      retries: 120
+    depends_on:
+      elastic-init:
+        condition: service_healthy
+        restart: true
+    restart: unless-stopped
+
+  triton:
+    container_name: triton
+    image: nvcr.io/nvidia/tritonserver:26.02-py3
+    group_add:
+      - keep-groups
+    devices:
+      - nvidia.com/gpu=all
+    command: >-
+      tritonserver --model-repository=/models
+      --exit-on-error=false
+      --log-info=true
+      --strict-readiness=false
+      --disable-auto-complete-config
+      --model-control-mode=poll
+      --repository-poll-secs=15
+    volumes:
+      - /opt/abeonasec/models:/models
+    networks:
+      - abeonasec-internal
+    restart: unless-stopped
+
+  morpheus:
+    container_name: morpheus
+    image: ghcr.io/abeonasec/morpheus:latest
+    group_add:
+      - keep-groups
+    init: true
+    volumes:
+      - /etc/abeonasec/es-client.yml:/etc/abeonasec/es-client.yml
+      - /opt/abeonasec/scripts:/scripts
+      - /opt/abeonasec/certs:/certs
+    devices:
+      - nvidia.com/gpu=all
+    networks:
+      - abeonasec-internal
+    depends_on:
+      - abeonasec-es01
+    command: >
+      /bin/bash -c '
+        echo "Waiting for Elasticsearch availability";
+        until curl -s -f --cacert /certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} https://abeonasec-es01:9200/_cat/health | grep green; do sleep 10; done;
+        echo "Elasticsearch connection successful, starting pipeline...";
+        . /opt/conda/etc/profile.d/conda.sh && conda activate morpheus && pip install --root-user-action=ignore kafka-python-ng && python3 /scripts/populateKafka.py  && export PYTHONUNBUFFERED=1 && python3 /scripts/abp-pipe.py';
+    depends_on:
+      abeonasec-es01:
+        condition: service_healthy
+        restart: true
+    restart: unless-stopped
+
+  abeonasec-api:
+    container_name: abeonasec-api
+    image: ghcr.io/abeonasec/api
+    group_add:
+      - keep-groups
+    pid: host
+    devices:
+      - nvidia.com/gpu=all
+    networks:
+      - abeonasec-internal
+    restart: unless-stopped
+
+  abeonasec-web-gui:
+    container_name: abeonasec-web-gui
+    image: ghcr.io/abeonasec/web-gui:latest
+    group_add:
+      - keep-groups
+    networks:
+      - abeonasec-internal
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+networks:
+  abeonasec-internal: {}
+

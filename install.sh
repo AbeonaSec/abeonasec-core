@@ -26,7 +26,7 @@ declare -a EXP=(
 "podman"
 "podman-compose"
 "cuda-toolkit-12-8"
-"nvidia-driver-570-open"
+"nvidia-driver-580-open"
 )
 declare -a DEP=(
 
@@ -63,21 +63,35 @@ nvidia-container-toolkit-base=$NVIDIA_CONTAINER_TOOLKIT_VERSION \
 libnvidia-container-tools=$NVIDIA_CONTAINER_TOOLKIT_VERSION \
 libnvidia-container1=$NVIDIA_CONTAINER_TOOLKIT_VERSION
 
+echo "Adding user to abeonasec"
 sudo useradd -r -s /bin/bash abeonasec
+echo "Adding current user to abeonasec group"
+sudo usermod -aG abeonasec $USER
 
 sudo mkdir /etc/abeonasec/
-sudo chown abeonasec:abeonasec /etc/abeonasec
+sudo mkdir /etc/abeonasec/compose/
+sudo mkdir /etc/abeonasec/compose/networks
+sudo mkdir /etc/abeonasec/compose/plugins
+sudo chown -R abeonasec:abeonasec /etc/abeonasec
+sudo chmod -R g+rwxs /etc/abeonasec
 sudo mkdir /opt/abeonasec/
 sudo mkdir /opt/abeonasec/scripts
 sudo mkdir /opt/abeonasec/models
-sudo chown abeonasec:abeonasec /opt/abeonasec
+sudo chown -R abeonasec:abeonasec /opt/abeonasec
+sudo chmod -R g+rwxs /opt/abeonasec
 sudo mkdir /var/lib/abeonasec
 sudo mkdir /var/lib/abeonasec/data
-sudo chown abeonasec:abeonasec /var/lib/abeonasec
+sudo chown -R abeonasec:abeonasec /var/lib/abeonasec
+sudo chmod -R g+rwxs /var/lib/abeonasec
 sudo mkdir /var/log/abeonasec/
-sudo chown abeonasec:abeonasec /var/log/abeonasec
+sudo chown -R abeonasec:abeonasec /var/log/abeonasec
+sudo chmod -R g+rwxs /var/log/abeonasec
 
+read -s -p "Please enter a password for the configuration: " password
 
+cp -r ./compose /etc/abeonasec/
+
+echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env
 
 echo ""
 echo "Please reboot your system"
