@@ -162,7 +162,7 @@ services:
         echo "Waiting for Elasticsearch availability";
         until curl -s -f --cacert /certs/ca/ca.crt -u elastic:${ELASTIC_PASSWORD} https://abeonasec-es01:9200/_cat/health | grep green; do sleep 10; done;
         echo "Elasticsearch connection successful, starting pipeline...";
-        . /opt/conda/etc/profile.d/conda.sh && conda activate morpheus && pip install --root-user-action=ignore kafka-python-ng && python3 /scripts/populateKafka.py  && export PYTHONUNBUFFERED=1 && python3 /scripts/abp-pipe.py';
+        . /opt/conda/etc/profile.d/conda.sh && conda activate morpheus && for i in /scripts/*.py; do python3 "$i"; done';
     depends_on:
       abeonasec-es01:
         condition: service_healthy
