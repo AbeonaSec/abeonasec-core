@@ -178,7 +178,8 @@ services:
     devices:
       - nvidia.com/gpu=all
     networks:
-      - abeonasec-internal
+      abeonasec-internal:
+        ipv4_address: 10.89.0.32
     restart: unless-stopped
 
   abeonasec-web-gui:
@@ -193,5 +194,10 @@ services:
     restart: unless-stopped
 
 networks:
-  abeonasec-internal: {}
+  abeonasec-internal:
+    ipam:
+      driver: default
+      config:
+        - subnet: "10.89.0.0/24"
+
 
