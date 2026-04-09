@@ -26,7 +26,7 @@ declare -a EXP=(
 "podman"
 "podman-compose"
 "cuda-toolkit-12-8"
-"nvidia-driver-580-open"
+"nvidia-driver-590-open"
 )
 declare -a DEP=(
 
