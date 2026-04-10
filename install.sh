@@ -14,6 +14,19 @@ then
 	&& curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
 	sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
 	sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+	sudo apt update
+	sudo apt install ca-certificates curl
+	sudo install -m 0755 -d /etc/apt/keyrings
+	sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+	sudo chmod a+r /etc/apt/keyrings/docker.asc
+	sudo tee /etc/apt/sources.list.d/docker.sources <<-EOF
+	Types: deb
+	URIs: https://download.docker.com/linux/ubuntu
+	Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+	Components: stable
+	Architectures: $(dpkg --print-architecture)
+	Signed-By: /etc/apt/keyrings/docker.asc
+	EOF
 else
         echo "These are necessary for installation, Goodbye"
         exit 1
@@ -23,9 +36,13 @@ sudo apt-get update
 
 #check for dependencies
 declare -a EXP=(
-"podman"
-"podman-compose"
+"docker-ce"
+"docker-ce-cli"
+"containerd.io"
+"docker-buildx-plugin"
+"docker-compose-plugin"
 "cuda-toolkit-12-8"
+"docker-compose-plugin"
 "nvidia-driver-580-open"
 )
 declare -a DEP=(
@@ -83,6 +100,7 @@ sudo chmod -R g+rwxs /opt/abeonasec
 sudo mkdir /var/lib/abeonasec
 sudo mkdir /var/lib/abeonasec/data
 sudo mkdir /var/lib/abeonasec/kafka
+sudo mkdir /var/lib/abeonasec/eleasticsearch
 sudo mkdir /var/lib/abeonasec/elasticsearch/data
 sudo chown -R abeonasec:abeonasec /var/lib/abeonasec
 sudo chmod -R g+rwxs /var/lib/abeonasec
@@ -97,8 +115,6 @@ sudo cp ./conf/es-client.yml /etc/abeonasec/
 sed "s/placeholder123/$password/g" /etc/abeonasec/es-client.yml
 
 echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env
-
-podman compose -f /etc/abeonasec/compose/compose.yml pull
 
 echo ""
 echo "Please reboot your system"
