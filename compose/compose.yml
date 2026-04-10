@@ -27,8 +27,6 @@ services:
   elastic-init:
     container_name: elastic-init
     image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
-    group_add:
-      - keep-groups
     volumes:
       - /opt/abeonasec/certs:/usr/share/elasticsearch/config/certs
     command: >
@@ -73,7 +71,6 @@ services:
   abeonasec-es01: # single node elasticsearch cluster
     container_name: abeonasec-es01
     image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
-      - keep-groups
     volumes:
       - /var/lib/abeonasec/elasticsearch/data:/usr/share/elasticsearch/data
       - /opt/abeonasec/certs:/usr/share/elasticsearch/config/certs

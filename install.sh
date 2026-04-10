@@ -115,7 +115,7 @@ sudo cp -r ./compose /etc/abeonasec/
 sudo cp ./conf/es-client.yml /etc/abeonasec/
 sed "s/placeholder123/$password/g" /etc/abeonasec/es-client.yml
 
-echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env
+sudo bash -c "echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env"
 
 echo ""
 echo "Please reboot your system"
