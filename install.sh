@@ -117,5 +117,7 @@ sed "s/placeholder123/$password/g" /etc/abeonasec/es-client.yml
 
 sudo bash -c "echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env"
 
+sudo docker compose -f /etc/abeonasec/compose/compose.yml pull
+
 echo ""
 echo "Please reboot your system"
