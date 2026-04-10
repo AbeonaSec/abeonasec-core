@@ -102,8 +102,9 @@ sudo mkdir /var/lib/abeonasec
 sudo mkdir /var/lib/abeonasec/data
 sudo mkdir /var/lib/abeonasec/kafka
 sudo mkdir /var/lib/abeonasec/eleasticsearch
-sudo mkdir /var/lib/abeonasec/elasticsearch/data
 sudo chown -R abeonasec:abeonasec /var/lib/abeonasec
+sudo mkdir /var/lib/abeonasec/elasticsearch/data
+sudo chown -R 1000:1000 /var/lib/abeonasec/elasticsearch/data
 sudo chmod -R g+rwxs /var/lib/abeonasec
 sudo mkdir /var/log/abeonasec/
 sudo chown -R abeonasec:abeonasec /var/log/abeonasec
