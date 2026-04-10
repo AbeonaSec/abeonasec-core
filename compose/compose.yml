@@ -20,7 +20,7 @@ services:
       KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
       CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
     volumes:
-      - /var/lib/abeonasec/kafka:/tmp/kraft-combined-logs
+      - /var/lib/abeonasec/kafka:/tmp/kraft-combined-logs:U
     networks:
       - abeonasec-internal
 
@@ -29,6 +29,7 @@ services:
     image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
     volumes:
       - /opt/abeonasec/certs:/usr/share/elasticsearch/config/certs
+    user: root
     command: >
       bash -c '
         if [ x${ELASTIC_PASSWORD} == x ]; then
@@ -72,7 +73,7 @@ services:
     container_name: abeonasec-es01
     image: docker.elastic.co/elasticsearch/elasticsearch-wolfi:9.3.0
     volumes:
-      - /var/lib/abeonasec/elasticsearch/data:/usr/share/elasticsearch/data
+      - /var/lib/abeonasec/elasticsearch/data:/usr/share/elasticsearch/data:U
       - /opt/abeonasec/certs:/usr/share/elasticsearch/config/certs
     networks:
       - abeonasec-internal
@@ -127,7 +128,7 @@ services:
       --model-control-mode=poll
       --repository-poll-secs=15
     volumes:
-      - /opt/abeonasec/models:/models
+      - /opt/abeonasec/models:/models:U
     networks:
       - abeonasec-internal
     restart: unless-stopped
