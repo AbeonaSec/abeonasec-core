@@ -114,7 +114,8 @@ read -s -p "Please enter a password for the configuration: " password
 
 sudo cp -r ./compose /etc/abeonasec/
 sudo cp ./conf/es-client.yml /etc/abeonasec/
-sed "s/placeholder123/$password/g" /etc/abeonasec/es-client.yml
+
+sed -i "s/placeholder123/$password/g" /etc/abeonasec/es-client.yml
 
 sudo bash -c "echo "ELASTIC_PASSWORD=$password" >> /etc/abeonasec/compose/.env"
 
