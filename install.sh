@@ -95,6 +95,7 @@ sudo mkdir /opt/abeonasec/
 sudo mkdir /opt/abeonasec/scripts
 sudo mkdir /opt/abeonasec/models
 sudo mkdir /opt/abeonasec/certs
+sudo mkdir /opt/abeonasec/plugins
 sudo chown -R abeonasec:abeonasec /opt/abeonasec
 sudo chmod -R g+rwxs /opt/abeonasec
 sudo mkdir /var/lib/abeonasec
